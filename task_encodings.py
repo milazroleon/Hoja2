@@ -1,6 +1,6 @@
 from pathless_tree_search import PathlessTreeSearch, encode_problem
 import numpy as np
-from connect4.connect_state import ConnectState
+from connect_state import ConnectState
 
 
 def get_tree_search_for_sudoku(sudoku):
@@ -16,12 +16,10 @@ def get_tree_search_for_sudoku(sudoku):
             - decoder: Function to decode final node to 9x9 board.
     """
     domains = {
-        (row,col): list(range(1,10))
-
+        (row, col): list(range(1, 10))
         for row in range(9)
         for col in range(9)
-
-        if sudoku[row,col] == 0
+        if sudoku[row, col] == 0
     }
 
     def constraints(p_assignment):
@@ -29,33 +27,32 @@ def get_tree_search_for_sudoku(sudoku):
             for c in range(9):
                 if c != col and (row, c) in p_assignment and p_assignment[(row, c)] == value:
                     return False
-                
             for r in range(9):
                 if r != row and (r, col) in p_assignment and p_assignment[(r, col)] == value:
                     return False
-                
             box_row = (row // 3) * 3
             box_col = (col // 3) * 3
-
             for r in range(box_row, box_row + 3):
                 for c in range(box_col, box_col + 3):
                     if (r, c) != (row, col) and (r, c) in p_assignment and p_assignment[(r, c)] == value:
                         return False
-                    
-            if sudoku[row, col] != 0 and sudoku[row, col] != value:
-                return False
-            
         return True
-    
-    search = encode_problem(domains, constraints)
+
+    def goal(p_assignment):
+        return len(p_assignment) == len(domains) and constraints(p_assignment)
+
+    search = encode_problem(domains, constraints, order="bfs")
 
     def decoder(final):
+        if final is None:
+            return sudoku.copy()
         new_board = sudoku.copy()
         for (row, col), value in final.items():
             new_board[row, col] = value
         return new_board
 
     return search, decoder
+
 
 def get_tree_search_for_jobshop(jobshop):
     """
@@ -116,26 +113,41 @@ def get_tree_search_for_connect_4(opponent):
             - decoder: Function to extract yellow player’s move sequence.
     """
 
-    n0 = ConnectState()
+    initial = ConnectState()
+    first_red_move = opponent(initial)
+    s0 = initial.transition(first_red_move)
 
-    def succ(state):
-        succs = []
 
-        for col in range(7):
-            if state.is_applicable(col):
-                next = state.play(col, opponent)
-                succs.append(next)
-        return succs
+    n0 = (s0, [])
 
     def goal(state):
-        return state.winner == "yellow"
-    
-    search = PathlessTreeSearch(n0, succ, goal, better=None, order="bfs")
-    
-    def decoder(state):
-        return state.yellow_sequence
+        board, _ = state
+        return board.get_winner() == 1 
 
-    return search, decoder
+    def succ(state):
+        board, yellow_seq = state
+        if board.is_final():
+            return []
+
+        children = []
+        for yellow_col in board.get_free_cols():
+            yellow_board = board.transition(yellow_col)
+
+            if yellow_board.get_winner() == 1:
+                children.append((yellow_board, yellow_seq + [yellow_col]))
+            else:
+                red_col = opponent(yellow_board)
+                red_board = yellow_board.transition(red_col)
+                children.append((red_board, yellow_seq + [yellow_col]))
+
+        return children
+
+    def decoder(state):
+        if state is None:
+            return []
+        return state[1]
+
+    return PathlessTreeSearch(n0, succ, goal, order="dfs"), decoder
 
 
 def get_tree_search_for_tour_planning(distances, from_index, to_index):
