@@ -4,11 +4,11 @@ class PathlessTreeSearch:
 
     def __init__(self, n0, succ, goal, better=None, order="bfs"):
 
-        self.n0: Any = n0
-        self.succ: Callable = succ
-        self.goal: Callable = goal
-        self.better: Optional[Callable] = better
-        self.order: str = order
+        self.n0 = n0
+        self.succ = succ
+        self.goal = goal
+        self.better = better
+        self.order = order
 
         self._open: List[Any] = [n0]
         self._best: Optional[Any] = None
