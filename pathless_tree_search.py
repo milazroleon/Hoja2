@@ -85,4 +85,4 @@ def encode_problem(domains, constraints, better=None):
         else: 
             return False
         
-    return PathlessTreeSearch(n0, succ,goal,better)
+    return PathlessTreeSearch(n0, succ, goal, better, order="bfs")
