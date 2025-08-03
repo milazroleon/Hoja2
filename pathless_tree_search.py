@@ -10,9 +10,7 @@ class PathlessTreeSearch:
         self.better = better
         self.order = order
 
-        self._open: List[Any] = [n0]
-        self._best: Optional[Any] = None
-
+        self.reset()
 
     def reset(self):
         
