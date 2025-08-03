@@ -130,4 +130,4 @@ def encode_problem(domains, constraints, better=None, order="bfs"):
     def goal(p_assignment):
         return len(p_assignment) == len(domains)
         
-    return PathlessTreeSearch(n0, succ, goal, better, order)
+    return PathlessTreeSearch(n0={}, succ=succ, goal=goal, better=better, order=order)
