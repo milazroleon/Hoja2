@@ -60,7 +60,7 @@ class PathlessTreeSearch:
     def best(self):
         return self._best
 
-def encode_problem(domains, constraints, better=None):
+def encode_problem(domains, constraints, better=None, order="bfs"):
 
     n0 = {}
 
@@ -85,4 +85,4 @@ def encode_problem(domains, constraints, better=None):
         else: 
             return False
         
-    return PathlessTreeSearch(n0, succ, goal, better, order="bfs")
+    return PathlessTreeSearch(n0, succ, goal, better, order="bfs") 
