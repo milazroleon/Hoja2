@@ -89,30 +89,11 @@ class PathlessTreeSearch:
 
     @property
     def best(self):
-
-        """
-        Returns the current best solution.
-
-        Returns:
-            Any: The best node found so far.
-        """
-
+        
         return self._best
 
 
 def encode_problem(domains, constraints, better=None, order="bfs"):
-
-    """
-    Encodes a fixed-variable search problem as a tree search.
-
-    Args:
-        domains (dict): Mapping of variable names to domain lists.
-        constraints (Callable): Function that returns True if partial assignment is valid.
-        better (Callable, optional): Function that compares two full assignments.
-
-    Returns:
-        PathlessTreeSearch: Configured search object.
-    """
 
     var_list = list(domains)
     n0 = {}
