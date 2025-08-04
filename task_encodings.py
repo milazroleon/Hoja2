@@ -49,7 +49,7 @@ def get_tree_search_for_sudoku(sudoku):
             filled[r, c] = v
         return filled
 
-    search = encode_problem(domains, constraints, order="bfs")
+    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order="dfs")
     return search, decoder
 
 
@@ -92,7 +92,7 @@ def get_tree_search_for_jobshop(jobshop):
             result[job] = machine
         return result
     
-    search = encode_problem(domains, constraints, better, order="dfs")   
+    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order="dfs")
     
     return search, decoder
 
@@ -191,7 +191,7 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
             return length
         return route(a) < route(b)
 
-    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order=order)
+    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order="dfs")
 
     def decoder(assignment):
         return [assignment[i] for i in range(len(assignment))]
