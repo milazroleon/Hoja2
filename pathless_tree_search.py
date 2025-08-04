@@ -1,55 +1,29 @@
 class PathlessTreeSearch:
     """
     Implements a pathless tree search that supports BFS and DFS exploration.
-
-    Attributes:
-        order (str): Search order strategy ("bfs" or "dfs").
-        best (Any): Best known solution found during the search.
-        active (bool): True if the search can continue, False otherwise.
     """
 
     def __init__(self, n0, succ, goal, better=None, order="bfs"):
-        """
-        Initializes the search instance.
-
-        Args:
-            n0 (Any): Initial node in the search.
-            succ (Callable): Function that returns successors of a node.
-            goal (Callable): Function that returns True if a node is a goal.
-            better (Callable, optional): Comparator that returns True if first arg is better.
-            order (str): Exploration strategy ("bfs" or "dfs").
-        """
         self.n0 = n0
         self.succ = succ
         self.goal = goal
         self.better = better
         self.order = order
-
         self.reset()
 
     def reset(self):
-        """
-        Resets the search to its initial configuration.
-        Useful for re-running the search from scratch.
-        """
         self._open = [self.n0]
         self._best = None
         self._active = True
 
     def step(self):
-        """
-        Executes a single step in the tree search.
-
-        Returns:
-            bool: True if a new best solution is found; False otherwise.
-        """
         if not self._open:
             self._active = False
             return False
         
         if self.order == "bfs":
             node = self._open.pop(0)
-        else: 
+        else:
             node = self._open.pop()
 
         for succ_node in self.succ(node):
@@ -57,7 +31,7 @@ class PathlessTreeSearch:
                 if self.better is None:
                     self._best = succ_node
                     self._open = []
-                    self._active = False
+                    self._active = False  # ← CORREGIDO
                     return True
                 elif self._best is None or self.better(succ_node, self._best):
                     self._best = succ_node
@@ -73,44 +47,27 @@ class PathlessTreeSearch:
 
     @property
     def active(self):
-
-        """
-        Indicates whether the search is still ongoing.
-
-        Returns:
-            bool: True if there are nodes left to explore.
-        """
-
-        if len(self._open) > 0:
-            return True
-        else:
-            return False
-
+        return len(self._open) > 0
 
     @property
     def best(self):
-        
         return self._best
 
 
 def encode_problem(domains, constraints, better=None, order="bfs"):
-
     var_list = list(domains)
     n0 = {}
 
     def succ(assignment):
         if len(assignment) == len(var_list):
             return []
-
         next_var = var_list[len(assignment)]
         successors = []
-
         for val in domains[next_var]:
             new_assign = assignment.copy()
             new_assign[next_var] = val
             if constraints(new_assign):
                 successors.append(new_assign)
-
         return successors
 
     def goal(assignment):
