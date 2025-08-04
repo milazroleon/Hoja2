@@ -1,5 +1,5 @@
-from pathless_tree_search import PathlessTreeSearch, encode_problem
 from connect4.connect_state import ConnectState
+from pathless_tree_search import PathlessTreeSearch
 import numpy as np
 
 def get_tree_search_for_sudoku(sudoku):
@@ -112,41 +112,46 @@ def get_tree_search_for_connect_4(opponent):
             - decoder: Function to extract yellow player’s move sequence.
     """
 
-    initial = ConnectState()
-    first_red_move = opponent(initial)
-    s0 = initial.transition(first_red_move)
+    initial_state = ConnectState()
+    red_first_move = opponent(initial_state)
+    state_after_red = initial_state.transition(red_first_move)
 
-
-    n0 = (s0, [])
+    n0 = (state_after_red, [])
 
     def goal(state):
-        board, _ = state
-        return board.get_winner() == 1 
+        current_board, yellow_moves = state
+        return current_board.get_winner() == 1
 
     def succ(state):
-        board, yellow_seq = state
-        if board.is_final():
+        current_board, yellow_moves = state
+
+        if current_board.is_final():
             return []
 
-        children = []
-        for yellow_col in board.get_free_cols():
-            yellow_board = board.transition(yellow_col)
+        successors = []
+
+        # El jugador amarillo prueba todas las columnas libres
+        for yellow_col in current_board.get_free_cols():
+            yellow_board = current_board.transition(yellow_col)
+            updated_moves = yellow_moves + [yellow_col]
 
             if yellow_board.get_winner() == 1:
-                children.append((yellow_board, yellow_seq + [yellow_col]))
+                successors.append((yellow_board, updated_moves))
             else:
                 red_col = opponent(yellow_board)
                 red_board = yellow_board.transition(red_col)
-                children.append((red_board, yellow_seq + [yellow_col]))
+                successors.append((red_board, updated_moves))
 
-        return children
+        return successors
 
     def decoder(state):
         if state is None:
             return []
         return state[1]
 
-    return PathlessTreeSearch(n0, succ, goal, order="dfs"), decoder
+    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, order="dfs")
+
+    return search, decoder
 
 
 def get_tree_search_for_tour_planning(distances, from_index, to_index):
