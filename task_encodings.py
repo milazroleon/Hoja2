@@ -39,6 +39,7 @@ def get_tree_search_for_sudoku(sudoku):
 
     search = encode_problem(domains, constraints, order="dfs")
     return search, decoder
+    
 
 
 def get_tree_search_for_jobshop(jobshop):
@@ -91,18 +92,19 @@ def get_tree_search_for_connect_4(opponent):
             else:
                 red_col = opponent(yellow_board)
                 if red_col not in yellow_board.get_free_cols():
-                    continue  # prevención contra jugadas inválidas
+                    continue
                 red_board = yellow_board.transition(red_col)
                 successors.append((red_board, new_moves))
         return successors
 
     def decoder(state):
-        if state is None or len(state) < 2:
-            return [0]  # o [], si el grader lo acepta
+        if state is None:
+            return []
         return state[1]
 
     search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, order="bfs")
     return search, decoder
+
 
 
 def get_tree_search_for_tour_planning(distances, from_index, to_index):
@@ -137,4 +139,3 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
 
     search = encode_problem(domains, constraints, better=better, order="dfs")
     return search, decoder
-
