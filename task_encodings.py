@@ -3,17 +3,6 @@ from connect4.connect_state import ConnectState
 import numpy as np
 
 def get_tree_search_for_sudoku(sudoku):
-    """
-    Prepares a tree search to solve a Sudoku puzzle.
-
-    Args:
-        sudoku (np.ndarray): 9x9 numpy array representing the Sudoku board.
-
-    Returns:
-        tuple: (PathlessTreeSearch, decoder)
-            - search: Search object for solving the Sudoku.
-            - decoder: Function to decode final node to 9x9 board.
-    """
     domains = {}
 
     for row in range(9):
@@ -49,38 +38,21 @@ def get_tree_search_for_sudoku(sudoku):
             filled[r, c] = v
         return filled
 
-    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order="dfs")
+    search = encode_problem(domains, constraints, order="dfs")
     return search, decoder
 
 
 def get_tree_search_for_jobshop(jobshop):
-    """
-    Encodes a Job Shop Scheduling problem as a tree search.
-
-    Args:
-        jobshop (tuple): A tuple (m, d) where:
-            - m (int): Number of machines.
-            - d (list): List of job durations.
-
-    Returns:
-        tuple: (PathlessTreeSearch, decoder)
-            - search: Search object for solving the job shop.
-            - decoder: Function to decode final node into job-machine assignments.
-    """
-    m,d = jobshop
-
-    domains = {
-        i: list(range(m)) 
-        for i in range(len(d)) 
-    }
+    m, d = jobshop
+    domains = {i: list(range(m)) for i in range(len(d))}
 
     def constraints(p_assignment):
-        return True
-    
-    def better(a,b):
-        def time(p_assingment):
+        return True  # No constraints beyond domain limits
+
+    def better(a, b):
+        def time(p_assignment):
             total_load = [0] * m
-            for job, machine in p_assingment.items():
+            for job, machine in p_assignment.items():
                 total_load[machine] += d[job]
             return max(total_load)
         return time(a) < time(b)
@@ -91,11 +63,9 @@ def get_tree_search_for_jobshop(jobshop):
         for job, machine in final.items():
             result[job] = machine
         return result
-    
-    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order="dfs")
-    
-    return search, decoder
 
+    search = encode_problem(domains, constraints, better=better, order="dfs")
+    return search, decoder
 
 def get_tree_search_for_connect_4(opponent):
     """
@@ -149,32 +119,16 @@ def get_tree_search_for_connect_4(opponent):
 
 
 def get_tree_search_for_tour_planning(distances, from_index, to_index):
-    """
-    Encodes a tour planning problem as a tree search.
-
-    Args:
-        distances (np.ndarray): Adjacency matrix of distances between cities.
-        from_index (int): Starting city index.
-        to_index (int): Target city index.
-
-    Returns:
-        tuple: (PathlessTreeSearch, decoder)
-            - search: Search object to solve the tour planning problem.
-            - decoder: Function that returns the full path of the tour.
-    """
     n = len(distances)
     cities = list(range(n))
-
     domains = {
         0: [from_index],
         n - 1: [to_index]
     }
-
     for i in range(1, n - 1):
         domains[i] = [c for c in cities if c != from_index and c != to_index]
 
     def constraints(p_assignment):
-        # Solo permitimos rutas sin repetir ciudades
         values = list(p_assignment.values())
         return len(values) == len(set(values))
 
@@ -185,15 +139,14 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
                 city1 = path[i - 1]
                 city2 = path[i]
                 d = distances[city1, city2]
-                if d == 0: 
+                if d == 0:
                     return float("inf")
                 length += d
             return length
         return route(a) < route(b)
 
-    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order="dfs")
-
     def decoder(assignment):
         return [assignment[i] for i in range(len(assignment))]
 
+    search = encode_problem(domains, constraints, better=better, order="dfs")
     return search, decoder
