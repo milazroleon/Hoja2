@@ -99,14 +99,13 @@ def get_tree_search_for_connect_4(opponent):
         return children
 
     def decoder(state):
-    if state is None:
-        return [None] * 42
-    _, yellow_moves = state
-    return yellow_moves
+        if state is None:
+            return []
+        _, yellow_moves = state
+        return yellow_moves
 
     search = PathlessTreeSearch(n0=s0, succ=succ, goal=goal, order="dfs")
     return search, decoder
-    
 
 
 def get_tree_search_for_tour_planning(distances, from_index, to_index):
