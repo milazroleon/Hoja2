@@ -34,6 +34,7 @@ class PathlessTreeSearch:
         """
         self._open = [self.n0]
         self._best = None
+        self._active = True
 
     def step(self):
         """
@@ -43,6 +44,7 @@ class PathlessTreeSearch:
             bool: True if a new best solution is found; False otherwise.
         """
         if not self._open:
+            self._active = False
             return False
         
         if self.order == "bfs":
@@ -55,16 +57,18 @@ class PathlessTreeSearch:
                 if self.better is None:
                     self._best = succ_node
                     self._open = []
-                    return False
-                elif self.better is not None and (self._best is None or self.better(succ_node, self._best)):
+                    self._active = Fals
+                    return True
+                elif self._best is None or self.better(succ_node, self._best):
                     self._best = succ_node
                     return True
-
-                
-            elif self.order == "bfs":
+            if self.order == "bfs":
                 self._open.append(succ_node)
             else:
-                self._open.insert(0,succ_node)
+                self._open.insert(0, succ_node)
+
+        if not self._open:
+            self._active = False
         return False
 
     @property
@@ -130,4 +134,4 @@ def encode_problem(domains, constraints, better=None, order="bfs"):
     def goal(p_assignment):
         return len(p_assignment) == len(domains)
         
-    return PathlessTreeSearch(n0={}, succ=succ, goal=goal, better=better, order=order)
+    return PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order=order)
