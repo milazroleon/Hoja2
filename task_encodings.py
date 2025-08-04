@@ -99,27 +99,10 @@ def get_tree_search_for_connect_4(opponent):
         return children
 
     def decoder(state):
-    if state is None:
-        return []
-    game_state, yellow_moves = state
-    moves = []
-    current = ConnectState()
-    red_turn = True
-    y_index = 0
-
-    while not current.is_final():
-        if red_turn:
-            move = opponent(current)
-            current = current.transition(move)
-            moves.append(move)
-        else:
-            move = yellow_moves[y_index]
-            current = current.transition(move)
-            moves.append(move)
-            y_index += 1
-        red_turn = not red_turn
-
-    return moves
+        if state is None:
+            return []
+        _, yellow_moves = state
+        return yellow_moves
 
     search = PathlessTreeSearch(n0=s0, succ=succ, goal=goal, order="dfs")
     return search, decoder
