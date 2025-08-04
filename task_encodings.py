@@ -1,4 +1,4 @@
-from pathless_tree_search import PathlessTreeSearch
+from pathless_tree_search import PathlessTreeSearch, encode_problem
 from connect4.connect_state import ConnectState
 import numpy as np
 
