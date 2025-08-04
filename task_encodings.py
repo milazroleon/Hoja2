@@ -58,12 +58,8 @@ def get_tree_search_for_jobshop(jobshop):
 
     def decoder(final):
         if final is None:
-            return [] 
-        jobs = len(d)
-        result = [0] * jobs
-        for job, machine in final.items():
-            result[job] = machine
-        return result
+            return {}
+        return final
 
     search = encode_problem(domains, constraints, better=better, order="bfs")
     return search, decoder
