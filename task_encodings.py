@@ -131,7 +131,10 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
         return route(a) < route(b)
 
     def decoder(assignment):
+        if assignment is None:
+            return [] 
         return [assignment[i] for i in range(len(assignment))]
 
     search = encode_problem(domains, constraints, better=better, order="dfs")
     return search, decoder
+
