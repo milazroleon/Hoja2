@@ -114,24 +114,25 @@ def encode_problem(domains, constraints, better=None, order="bfs"):
         PathlessTreeSearch: Configured search object.
     """
 
+    variables = list(domains.keys())
     n0 = {}
 
-    def succ(p_assignment):
-        unassign_value = [n for n in domains if n not in p_assignment]
-        if not unassign_value: 
+    def succ(assignment):
+        if len(assignment) == len(variables):
             return []
-        
-        var = unassign_value[0]
-        succs = []
+
+        var = variables[len(assignment)]
+        children = []
 
         for value in domains[var]:
-            new_a = p_assignment.copy()
-            new_a[var] = value
-            if constraints(new_a):
-                succs.append(new_a)
-        return succs
-    
-    def goal(p_assignment):
-        return len(p_assignment) == len(domains)
-        
+            new_assignment = assignment.copy()
+            new_assignment[var] = value
+            if constraints(new_assignment):
+                children.append(new_assignment)
+
+        return children
+
+    def goal(assignment):
+        return len(assignment) == len(variables)
+
     return PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order=order)
