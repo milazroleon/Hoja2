@@ -2,31 +2,6 @@ from pathless_tree_search import PathlessTreeSearch
 from connect4.connect_state import ConnectState
 import numpy as np
 
-def encode_problem(domains, constraints, better=None, order="bfs"):
-
-    var_list = list(domains)
-    n0 = {}
-
-    def succ(assignment):
-        if len(assignment) == len(var_list):
-            return []
-
-        next_var = var_list[len(assignment)]
-        successors = []
-
-        for val in domains[next_var]:
-            new_assign = assignment.copy()
-            new_assign[next_var] = val
-            if constraints(new_assign):
-                successors.append(new_assign)
-
-        return successors
-
-    def goal(assignment):
-        return len(assignment) == len(var_list)
-
-    return PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order=order)
-
 def get_tree_search_for_sudoku(sudoku):
     """
     Prepares a tree search to solve a Sudoku puzzle.
