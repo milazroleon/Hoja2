@@ -20,24 +20,24 @@ def get_tree_search_for_sudoku(sudoku):
         for col in range(9):
             if sudoku[row, col] == 0:
                 used = set(sudoku[row, :]) | set(sudoku[:, col])
-                block_row = (row // 3) * 3
-                block_col = (col // 3) * 3
-                used |= set(sudoku[block_row:block_row+3, block_col:block_col+3].flatten())
+                block = sudoku[(row // 3) * 3: (row // 3) * 3 + 3,
+                               (col // 3) * 3: (col // 3) * 3 + 3]
+                used |= set(block.flatten())
                 domains[(row, col)] = [v for v in range(1, 10) if v not in used]
 
     def constraints(assignment):
         board = sudoku.copy()
-        for (r, c), v in assignment.items():
-            board[r, c] = v
+        for (r, c), val in assignment.items():
+            board[r, c] = val
 
-        for (r, c), v in assignment.items():
-            if list(board[r, :]).count(v) > 1:
+        for (r, c), val in assignment.items():
+            if list(board[r, :]).count(val) > 1:
                 return False
-            if list(board[:, c]).count(v) > 1:
+            if list(board[:, c]).count(val) > 1:
                 return False
             br, bc = 3 * (r // 3), 3 * (c // 3)
             block = board[br:br+3, bc:bc+3].flatten()
-            if list(block).count(v) > 1:
+            if list(block).count(val) > 1:
                 return False
         return True
 
@@ -84,8 +84,6 @@ def get_tree_search_for_jobshop(jobshop):
                 total_load[machine] += d[job]
             return max(total_load)
         return time(a) < time(b)
-    
-    search = encode_problem(domains, constraints, better, order="dfs")
 
     def decoder(final):
         jobs = len(d)
@@ -93,8 +91,8 @@ def get_tree_search_for_jobshop(jobshop):
         for job, machine in final.items():
             result[job] = machine
         return result
-
-        
+    
+    search = encode_problem(domains, constraints, better, order="dfs")   
     
     return search, decoder
 
@@ -119,28 +117,25 @@ def get_tree_search_for_connect_4(opponent):
     n0 = (state_after_red, [])
 
     def goal(state):
-        current_board, yellow_moves = state
-        return current_board.get_winner() == 1
+        board, _ = state
+        return board.get_winner() == 1
 
     def succ(state):
-        current_board, yellow_moves = state
-
-        if current_board.is_final():
+        board, yellow_moves = state
+        if board.is_final():
             return []
 
         successors = []
-
-        # El jugador amarillo prueba todas las columnas libres
-        for yellow_col in current_board.get_free_cols():
-            yellow_board = current_board.transition(yellow_col)
-            updated_moves = yellow_moves + [yellow_col]
+        for yellow_col in board.get_free_cols():
+            yellow_board = board.transition(yellow_col)
+            new_moves = yellow_moves + [yellow_col]
 
             if yellow_board.get_winner() == 1:
-                successors.append((yellow_board, updated_moves))
+                successors.append((yellow_board, new_moves))
             else:
                 red_col = opponent(yellow_board)
                 red_board = yellow_board.transition(red_col)
-                successors.append((red_board, updated_moves))
+                successors.append((red_board, new_moves))
 
         return successors
 
@@ -149,8 +144,7 @@ def get_tree_search_for_connect_4(opponent):
             return []
         return state[1]
 
-    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, order="dfs")
-
+    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, order="bfs")
     return search, decoder
 
 
@@ -180,6 +174,7 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
         domains[i] = [c for c in cities if c != from_index and c != to_index]
 
     def constraints(p_assignment):
+        # Solo permitimos rutas sin repetir ciudades
         values = list(p_assignment.values())
         return len(values) == len(set(values))
 
@@ -189,7 +184,10 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
             for i in range(1, len(path)):
                 city1 = path[i - 1]
                 city2 = path[i]
-                length += distances[city1, city2]
+                d = distances[city1, city2]
+                if d == 0: 
+                    return float("inf")
+                length += d
             return length
         return route(a) < route(b)
 
