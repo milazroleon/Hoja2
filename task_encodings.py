@@ -57,14 +57,17 @@ def get_tree_search_for_jobshop(jobshop):
         return time(a) < time(b)
 
     def decoder(final):
+        if final is None:
+            return [] 
         jobs = len(d)
         result = [0] * jobs
         for job, machine in final.items():
             result[job] = machine
         return result
 
-    search = encode_problem(domains, constraints, better=better, order="dfs")
+    search = encode_problem(domains, constraints, better=better, order="bfs")
     return search, decoder
+
 
 
 def get_tree_search_for_connect_4(opponent):
