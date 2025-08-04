@@ -57,7 +57,7 @@ class PathlessTreeSearch:
                 if self.better is None:
                     self._best = succ_node
                     self._open = []
-                    self._active = Fals
+                    self._active = False
                     return True
                 elif self._best is None or self.better(succ_node, self._best):
                     self._best = succ_node
