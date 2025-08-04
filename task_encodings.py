@@ -191,7 +191,7 @@ def get_tree_search_for_tour_planning(distances, from_index, to_index):
             return length
         return route(a) < route(b)
 
-    search = encode_problem(domains, constraints, better)
+    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, better=better, order=order)
 
     def decoder(assignment):
         return [assignment[i] for i in range(len(assignment))]
