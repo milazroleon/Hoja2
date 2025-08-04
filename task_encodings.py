@@ -15,42 +15,42 @@ def get_tree_search_for_sudoku(sudoku):
             - search: Search object for solving the Sudoku.
             - decoder: Function to decode final node to 9x9 board.
     """
-    domains = {
-        (row, col): list(range(1, 10))
-        for row in range(9)
-        for col in range(9)
-        if sudoku[row, col] == 0
-    }
+    domains = {}
 
-    def constraints(p_assignment):
-        for (row, col), value in p_assignment.items():
-            for c in range(9):
-                if c != col and (row, c) in p_assignment and p_assignment[(row, c)] == value:
-                    return False
-            for r in range(9):
-                if r != row and (r, col) in p_assignment and p_assignment[(r, col)] == value:
-                    return False
-            box_row = (row // 3) * 3
-            box_col = (col // 3) * 3
-            for r in range(box_row, box_row + 3):
-                for c in range(box_col, box_col + 3):
-                    if (r, c) != (row, col) and (r, c) in p_assignment and p_assignment[(r, c)] == value:
-                        return False
+    for row in range(9):
+        for col in range(9):
+            if sudoku[row, col] == 0:
+                used = set(sudoku[row, :]) | set(sudoku[:, col])
+                block_row = (row // 3) * 3
+                block_col = (col // 3) * 3
+                used |= set(sudoku[block_row:block_row+3, block_col:block_col+3].flatten())
+                domains[(row, col)] = [v for v in range(1, 10) if v not in used]
+
+    def constraints(assignment):
+        board = sudoku.copy()
+        for (r, c), v in assignment.items():
+            board[r, c] = v
+
+        for (r, c), v in assignment.items():
+            if list(board[r, :]).count(v) > 1:
+                return False
+            if list(board[:, c]).count(v) > 1:
+                return False
+            br, bc = 3 * (r // 3), 3 * (c // 3)
+            block = board[br:br+3, bc:bc+3].flatten()
+            if list(block).count(v) > 1:
+                return False
         return True
 
-    def goal(p_assignment):
-        return len(p_assignment) == len(domains) and constraints(p_assignment)
+    def decoder(solution):
+        filled = sudoku.copy()
+        if solution is None:
+            return filled
+        for (r, c), v in solution.items():
+            filled[r, c] = v
+        return filled
 
     search = encode_problem(domains, constraints, order="bfs")
-
-    def decoder(final):
-        if final is None:
-            return sudoku.copy()
-        new_board = sudoku.copy()
-        for (row, col), value in final.items():
-            new_board[row, col] = value
-        return new_board
-
     return search, decoder
 
 
