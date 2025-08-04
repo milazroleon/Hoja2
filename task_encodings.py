@@ -68,43 +68,45 @@ def get_tree_search_for_jobshop(jobshop):
 
 
 def get_tree_search_for_connect_4(opponent):
-    initial_state = ConnectState()
-    red_first_move = opponent(initial_state)
-    state_after_red = initial_state.transition(red_first_move)
-    n0 = (state_after_red, [])
+    initial = ConnectState()
+    first_red_move = opponent(initial)
+    first_state = initial.transition(first_red_move)
+    s0 = (first_state, [])
 
     def goal(state):
-        board, _ = state
-        return board.get_winner() == 1
+        game_state, _ = state
+        return game_state.is_final() and game_state.get_winner() == 1
 
     def succ(state):
-        board, yellow_moves = state
-        if board.is_final():
+        game_state, yellow_moves = state
+        if game_state.is_final():
             return []
 
-        successors = []
-        for yellow_col in board.get_free_cols():
-            yellow_board = board.transition(yellow_col)
-            new_moves = yellow_moves + [yellow_col]
+        children = []
+        for yellow_move in game_state.get_free_cols():
+            yellow_state = game_state.transition(yellow_move)
+            updated_moves = yellow_moves + [yellow_move]
 
-            if yellow_board.get_winner() == 1:
-                successors.append((yellow_board, new_moves))
+            if yellow_state.is_final():
+                children.append((yellow_state, updated_moves))
             else:
-                red_col = opponent(yellow_board)
-                if red_col not in yellow_board.get_free_cols():
+                red_move = opponent(yellow_state)
+                if red_move not in yellow_state.get_free_cols():
                     continue
-                red_board = yellow_board.transition(red_col)
-                successors.append((red_board, new_moves))
-        return successors
+                red_state = yellow_state.transition(red_move)
+                children.append((red_state, updated_moves))
+
+        return children
 
     def decoder(state):
         if state is None:
             return []
-        return state[1]
+        _, yellow_moves = state
+        return yellow_moves
 
-    search = PathlessTreeSearch(n0=n0, succ=succ, goal=goal, order="bfs")
+    search = PathlessTreeSearch(n0=s0, succ=succ, goal=goal, order="dfs")
     return search, decoder
-
+    
 
 
 def get_tree_search_for_tour_planning(distances, from_index, to_index):
