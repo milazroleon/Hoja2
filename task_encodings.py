@@ -1,7 +1,6 @@
 from pathless_tree_search import PathlessTreeSearch, encode_problem
 import numpy as np
-from connect_state import ConnectState
-
+from connect4.connect_state import ConnectState
 
 def get_tree_search_for_sudoku(sudoku):
     """
